@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notas</title>
+    <link rel="stylesheet" href="css/notas.css">
+</head>
+<body>
+    <header>
+        <h1>Hola <%= user.nombre %></h1>
+        <h2><a href="/">Inicio</a></h2>
+    </header>
+    
+    
+    <div class="form">
+        <h2>Crea una nueva nota</h2>
+        <form action="/crear" method="post">
+        
+            <textarea name="contenido" id="" cols="30" rows="10"></textarea> <br>
+            <input type="submit" value="Enviar">
+        </form>
+    </div>
+    
+    <div class="container">
+        <% if (notas && notas.length) { %>
+            <% notas.forEach(function(nota) { %>
+                <div class="nota">
+                    <p class="editor" contenteditable="false"><%= nota.contenido %></p>
+                    <div class="botones">
+                        <form action="/actualizar" method="post">
+                            <input type="hidden" name="notaId" value="<%= nota._id %>">
+                            <button type="button" class="btnActualizar" onclick="actualizar(event)">Actualizar</button>
+                        </form>
+                        <form action="/eliminar" method="post">
+                            <input type="hidden" name="notaId" value="<%= nota._id %>">
+                            <button id="eliminar">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="16" width="14" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"/></svg>
+                                
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p>No hay notas disponibles</p>
+        <% } %>
+        <h2><a href="/cerrar-sesion">Cerrar sesion</a></h2>
+        <script>
+            function actualizar(event){
+                const btn = event.target;
+                const notaDiv = btn.closest('.nota');
+                const txt = notaDiv.querySelector('.editor');
+
+                switch (btn.innerText){
+                    case "Actualizar": 
+                        btn.innerText = "Guardar";
+                        txt.setAttribute("contenteditable", "true");
+                        alert("Haz click en el texto para editarlo y luego dale en 'Guardar'")
+                        break;
+                    case "Guardar": 
+                        btn.innerText = "Actualizar";
+                        txt.setAttribute("contenteditable", "false");
+                        const nuevoContenido = txt.innerHTML;
+                        const notaId = notaDiv.querySelector('input[name="notaId"]').value;
+
+                        fetch('/actualizar', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ notaId, contenido: nuevoContenido }),
+                        })
+                        .then(response => response.json())
+                        .then(data => console.log('Respuesta del servidor:', data))
+                        .catch(error => console.error('Error al enviar la solicitud:', error));
+                        break;
+                }
+                event.preventDefault();
+            }
+            
+        </script>
+    </div>
+</body>
+</html>
